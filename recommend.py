@@ -1,8 +1,8 @@
-
 import numpy as np
 import pandas as pd
+from sklearn.neighbors import NearestNeighbors
 from sentence_transformers import SentenceTransformer
-import openai
+
 
 openai.api_key = "your-openai-key"
 
