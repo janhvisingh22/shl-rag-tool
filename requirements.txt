@@ -1,0 +1,9 @@
+scikit-learn
+streamlit
+openai
+pandas
+numpy
+scikit-learn
+tqdm
+python-dotenv
+faiss-cpu
