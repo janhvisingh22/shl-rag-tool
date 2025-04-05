@@ -4,7 +4,9 @@ from sklearn.neighbors import NearestNeighbors
 from sentence_transformers import SentenceTransformer
 
 
-openai.api_key = "your-openai-key"
+import streamlit as st
+openai.api_key = st.secrets["openai_api_key"]
+
 
 def load_data():
     df = pd.read_csv("shl_catalog_clean.csv")
