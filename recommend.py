@@ -26,10 +26,12 @@ def load_data():
 def get_top_k(query, k=5):
     df, embeddings, index = load_data()
     model = SentenceTransformer("all-MiniLM-L6-v2")
-    query_embedding = model.encode([query])
+    query_embedding = model.encode([query], show_progress_bar=False)
+    query_embedding = np.array(query_embedding).reshape(1, -1)  # Ensure correct shape
     distances, indices = index.kneighbors(query_embedding, return_distance=True)
     top_k_df = df.iloc[indices[0]]
     return top_k_df
+
 
 def generate_response(context, query):
     prompt = f"""You are an expert assessment recommendation system. Based on the context below, respond to the user's query with the most relevant assessment(s).
