@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from sentence_transformers import SentenceTransformer
 
-
+import openai
 import streamlit as st
 openai.api_key = st.secrets["openai_api_key"]
 
