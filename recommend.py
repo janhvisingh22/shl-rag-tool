@@ -1,31 +1,53 @@
-import numpy as np
 import pandas as pd
+import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sentence_transformers import SentenceTransformer
-
 import openai
 import streamlit as st
-openai.api_key = st.secrets["openai_api_key"]
+import os
 
+openai.api_key = st.secrets["openai_api_key"]
 
 def load_data():
     df = pd.read_csv("shl_catalog_clean.csv")
-    embeddings = np.load("catalog_embeddings.npy")
-    index = faiss.read_index("faiss_index.index")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    if os.path.exists("catalog_embeddings.npy"):
+        embeddings = np.load("catalog_embeddings.npy")
+    else:
+        embeddings = model.encode(df['Description'].tolist(), show_progress_bar=True)
+        np.save("catalog_embeddings.npy", embeddings)
+
+    index = NearestNeighbors(n_neighbors=5, metric='cosine')
+    index.fit(embeddings)
+
     return df, embeddings, index
 
 def get_top_k(query, k=5):
-    df, _, index = load_data()
+    df, embeddings, index = load_data()
     model = SentenceTransformer("all-MiniLM-L6-v2")
-    q_emb = model.encode([query])
-    D, I = index.search(np.array(q_emb), k)
-    return df.iloc[I[0]]
+    query_embedding = model.encode([query])
+    distances, indices = index.kneighbors(query_embedding, return_distance=True)
+    top_k_df = df.iloc[indices[0]]
+    return top_k_df
 
-def generate_response(query, top_df):
-    context = "\n".join(top_df['full_text'].tolist())
-    prompt = f"You are a helpful assistant. Based on this query: '{query}', choose the most relevant assessments:\n\n{context}"
+def generate_response(context, query):
+    prompt = f"""You are an expert assessment recommendation system. Based on the context below, respond to the user's query with the most relevant assessment(s).
+
+Context:
+{context}
+
+Query:
+{query}
+
+Response:"""
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[
+            {"role": "system", "content": "You provide assessment recommendations based on SHL catalog data."},
+            {"role": "user", "content": prompt}
+        ]
     )
+
     return response['choices'][0]['message']['content']
