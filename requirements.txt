@@ -7,3 +7,7 @@ scikit-learn
 tqdm
 python-dotenv
 faiss-cpu
+streamlit
+pandas
+scikit-learn
+sentence-transformers
