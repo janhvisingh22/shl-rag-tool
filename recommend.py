@@ -26,9 +26,10 @@ def load_data():
 def get_top_k(query, k=5):
     df, embeddings, index = load_data()
     model = SentenceTransformer("all-MiniLM-L6-v2")
-    query_embedding = model.encode([query], show_progress_bar=False)
-    query_embedding = np.array(query_embedding).reshape(1, -1)  # Ensure correct shape
-    distances, indices = index.kneighbors([query_embedding], return_distance=True)
+    query_embedding = model.encode(query, convert_to_numpy=True)
+    query_embedding = np.asarray(query_embedding).reshape(1, -1).astype(np.float32)
+    distances, indices = index.kneighbors(query_embedding, return_distance=True)
+
     top_k_df = df.iloc[indices[0]]
     return top_k_df
 
