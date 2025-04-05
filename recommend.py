@@ -19,7 +19,8 @@ def load_data():
         np.save("catalog_embeddings.npy", embeddings)
 
     index = NearestNeighbors(n_neighbors=5, metric='cosine')
-    index.fit(embeddings)
+    index.fit(embeddings.astype(np.float32))
+
 
     return df, embeddings, index
 
@@ -27,7 +28,8 @@ def get_top_k(query, k=5):
     df, embeddings, index = load_data()
     model = SentenceTransformer("all-MiniLM-L6-v2")
     query_embedding = model.encode(query, convert_to_numpy=True)
-    query_embedding = np.asarray(query_embedding).reshape(1, -1).astype(np.float32)
+    query_embedding = np.array(query_embedding).reshape(1, -1).astype(np.float32)
+
     distances, indices = index.kneighbors(query_embedding, return_distance=True)
 
     top_k_df = df.iloc[indices[0]]
