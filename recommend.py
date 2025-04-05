@@ -26,14 +26,16 @@ def load_data():
 
 def get_top_k(query, k=5):
     df, embeddings, index = load_data()
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-    query_embedding = model.encode(query, convert_to_numpy=True)
+    query_embedding = model.encode(query)
+
+    # ✅ Reshape the query embedding to (1, -1)
     query_embedding = query_embedding.reshape(1, -1)
+
     distances, indices = index.kneighbors(query_embedding, return_distance=True)
-
-
-    top_k_df = df.iloc[indices[0]]
+    top_k_df = df.iloc[indices[0]].copy()
+    top_k_df["similarity"] = 1 - distances[0]  # Optional: similarity instead of distance
     return top_k_df
+
 
 
 def generate_response(context, query):
